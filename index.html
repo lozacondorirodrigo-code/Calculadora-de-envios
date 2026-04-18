@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rodri Envíos PRO MAX</title>
+<title>Rodri Envíos PRO</title>
 
 <style>
 body { font-family: Arial; background:#0f172a; color:white; text-align:center; padding:10px;}
@@ -11,12 +11,13 @@ button { background:#22c55e; color:white;}
 .copy { background:#3b82f6;}
 .result { font-size:18px; color:#facc15;}
 .small { font-size:14px; color:#94a3b8;}
+label { font-size:16px; }
 </style>
 </head>
 
 <body>
 
-<h2>💸 Rodri Envíos PRO MAX</h2>
+<h2>💸 Rodri Envíos PRO</h2>
 
 <h3>⚙️ Cambio del día</h3>
 <input type="number" id="usdtars" placeholder="USDT ARS">
@@ -26,8 +27,13 @@ button { background:#22c55e; color:white;}
 <hr>
 
 <h3>💰 Nueva operación</h3>
+
 <input type="text" id="cliente" placeholder="Cliente (opcional)">
 <input type="number" id="bs" placeholder="Monto en Bs">
+
+<label>
+<input type="checkbox" id="vip"> Cliente frecuente ⭐
+</label>
 
 <button onclick="calcular()">Calcular</button>
 <button class="copy" onclick="copiar()">📲 Copiar</button>
@@ -44,9 +50,9 @@ function guardarCambio(){
   let usdtbs = parseFloat(document.getElementById("usdtbs").value);
 
   let tipoReal = usdtars / usdtbs;
-
   localStorage.setItem("tipoReal", tipoReal);
-  alert("Cambio base guardado ✔");
+
+  alert("Cambio guardado ✔");
 }
 
 function obtenerPorcentaje(bs){
@@ -72,31 +78,18 @@ function calcular(){
   }
 
   let porcentaje = obtenerPorcentaje(bs);
-  let tipoFinal = tipoReal * (1 + porcentaje/100);
 
+  // CLIENTE VIP
+  let esVIP = document.getElementById("vip").checked;
+  if(esVIP && bs >= 300 && bs <= 2000){
+    porcentaje -= 0.5;
+  }
+
+  let tipoFinal = tipoReal * (1 + porcentaje/100);
   let cobrar = bs * tipoFinal;
-  let costo = bs * tipoReal;
-  let ganancia = cobrar - costo;
+  let ganancia = cobrar - (bs * tipoReal);
 
   document.getElementById("resultado").innerHTML =
     "💰 Cobrar: " + cobrar.toLocaleString() + " ARS";
 
-  document.getElementById("detalle").innerHTML =
-    "📊 % aplicado: " + porcentaje + "% | Ganancia: " + ganancia.toLocaleString() + " ARS";
-
-  mensaje = "💸 Envío a Bolivia con Rodri 🇧🇴\n" +
-            "Cliente: " + cliente +
-            "\nMonto: " + bs + " Bs" +
-            "\nTotal: " + cobrar.toLocaleString() + " ARS";
-
-}
-
-function copiar(){
-  navigator.clipboard.writeText(mensaje);
-  alert("Mensaje copiado ✔");
-}
-
-</script>
-
-</body>
-</html>
+  document.getElementById("detalle
