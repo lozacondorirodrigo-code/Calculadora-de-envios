@@ -2,11 +2,14 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rodri Envíos AUTO</title>
+<title>Rodri Envíos PRO MAX</title>
 
 <style>
 body { font-family: Arial; background:#0f172a; color:white; text-align:center; padding:10px;}
-input, button { padding:10px; margin:6px; font-size:16px; width:90%; border-radius:10px; border:none;}
+input, select, button {
+  padding:12px; margin:6px; font-size:16px;
+  width:90%; border-radius:10px; border:none;
+}
 button { background:#22c55e; color:white;}
 .copy { background:#3b82f6;}
 .result { font-size:20px; color:#facc15;}
@@ -16,22 +19,23 @@ button { background:#22c55e; color:white;}
 
 <body>
 
-<h2>💸 Rodri Envíos AUTO</h2>
+<h2>💸 Rodri Envíos PRO MAX</h2>
 
 <h3>⚙️ Cambio del día</h3>
-<input type="text" id="usdtars" placeholder="USDT ARS">
-<input type="text" id="usdtbs" placeholder="USDT Bs">
-<button onclick="guardarCambio()">💾 Guardar</button>
+<input type="text" id="usdtars" placeholder="USDT ARS (ej: 1450)">
+<input type="text" id="usdtbs" placeholder="USDT Bs (ej: 9.45)">
+<button onclick="guardarCambio()">💾 Guardar cambio</button>
 
 <hr>
 
-<h3>💰 Monto automático</h3>
+<h3>💰 Operación</h3>
 
-<input type="text" id="monto" placeholder="Escribe Bs o ARS">
+<input type="text" id="monto" placeholder="Monto (ARS o Bs)">
 
 <select id="modo">
-  <option value="bs">Envío en Bs → ARS</option>
-  <option value="ars">Envío en ARS → Bs</option>
+  <option value="bs_ars">Bs → ARS</option>
+  <option value="ars_bs">ARS → Bs</option>
+  <option value="bo_ar">Bolivia → Argentina</option>
 </select>
 
 <label>
@@ -48,13 +52,13 @@ button { background:#22c55e; color:white;}
 
 let mensaje = "";
 
-// 🔹 convertir seguro
+// convertir seguro
 function num(v){
   if(!v) return 0;
   return parseFloat(v.toString().replace(",", "."));
 }
 
-// 🔹 guardar cambio
+// guardar cambio
 function guardarCambio(){
   let ars = num(document.getElementById("usdtars").value);
   let bs = num(document.getElementById("usdtbs").value);
@@ -70,10 +74,10 @@ function guardarCambio(){
   localStorage.setItem("usdtars", ars);
   localStorage.setItem("usdtbs", bs);
 
-  alert("Guardado ✔");
+  alert("Cambio guardado ✔");
 }
 
-// 🔹 rangos
+// rangos
 function porcentaje(bs){
   if(bs >= 100 && bs <= 300) return 8;
   if(bs <= 700) return 7;
@@ -85,7 +89,7 @@ function porcentaje(bs){
   return 3;
 }
 
-// 🔹 cálculo automático
+// calcular
 function calcular(){
 
   let monto = num(document.getElementById("monto").value);
@@ -104,8 +108,8 @@ function calcular(){
 
   let vip = document.getElementById("vip").checked;
 
-  // 🔄 BS → ARS
-  if(modo === "bs"){
+  // 🔹 Bs → ARS
+  if(modo === "bs_ars"){
 
     let bs = monto;
     let p = porcentaje(bs);
@@ -129,12 +133,11 @@ function calcular(){
               "✔ Seguro y confiable";
   }
 
-  // 🔄 ARS → BS
-  else{
+  // 🔹 ARS → Bs
+  if(modo === "ars_bs"){
 
     let ars = monto;
 
-    // estimación
     let bsEstimado = ars / tipoReal;
     let p = porcentaje(bsEstimado);
 
@@ -156,6 +159,28 @@ function calcular(){
               "Recibes: " + bsFinal.toFixed(2) + " Bs\n" +
               "✔ Seguro y confiable";
   }
+
+  // 🔹 Bolivia → Argentina
+  if(modo === "bo_ar"){
+
+    let bs = monto;
+
+    let p = porcentaje(bs) + 1; // margen extra
+
+    let tipoFinal = tipoReal * (1 + p/100);
+    let ars = bs * tipoFinal;
+
+    document.getElementById("resultado").innerHTML =
+      "💰 Recibe: " + ars.toLocaleString() + " ARS";
+
+    document.getElementById("detalle").innerHTML =
+      "📊 " + p + "% aplicado";
+
+    mensaje = "💸 Envío a Argentina 🇦🇷\n" +
+              "Envías: " + bs + " Bs\n" +
+              "Recibes: " + ars.toLocaleString() + " ARS\n" +
+              "✔ Seguro y confiable";
+  }
 }
 
 // copiar
@@ -165,7 +190,7 @@ function copiar(){
     return;
   }
   navigator.clipboard.writeText(mensaje);
-  alert("Copiado ✔");
+  alert("Mensaje copiado ✔");
 }
 
 // cargar datos
