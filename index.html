@@ -2,38 +2,41 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rodri Envíos PRO</title>
+<title>Rodri Envíos AUTO</title>
 
 <style>
 body { font-family: Arial; background:#0f172a; color:white; text-align:center; padding:10px;}
-input, button { padding:10px; margin:6px; font-size:15px; width:90%; border-radius:10px; border:none;}
+input, button { padding:10px; margin:6px; font-size:16px; width:90%; border-radius:10px; border:none;}
 button { background:#22c55e; color:white;}
 .copy { background:#3b82f6;}
-.result { font-size:18px; color:#facc15;}
+.result { font-size:20px; color:#facc15;}
 .small { font-size:14px; color:#94a3b8;}
 </style>
 </head>
 
 <body>
 
-<h2>💸 Rodri Envíos PRO</h2>
+<h2>💸 Rodri Envíos AUTO</h2>
 
 <h3>⚙️ Cambio del día</h3>
-<input type="text" id="usdtars" placeholder="USDT ARS (ej: 1450)">
-<input type="text" id="usdtbs" placeholder="USDT Bs (ej: 9.45)">
-<button onclick="guardarCambio()">💾 Guardar cambio</button>
+<input type="text" id="usdtars" placeholder="USDT ARS">
+<input type="text" id="usdtbs" placeholder="USDT Bs">
+<button onclick="guardarCambio()">💾 Guardar</button>
 
 <hr>
 
-<h3>💰 Nueva operación</h3>
-<input type="text" id="cliente" placeholder="Cliente (opcional)">
-<input type="text" id="bs" placeholder="Monto en Bs">
+<h3>💰 Monto automático</h3>
+
+<input type="text" id="monto" placeholder="Escribe Bs o ARS">
+
+<select id="modo">
+  <option value="bs">Envío en Bs → ARS</option>
+  <option value="ars">Envío en ARS → Bs</option>
+</select>
 
 <label>
 <input type="checkbox" id="vip"> Cliente frecuente ⭐
 </label>
-
-<br><br>
 
 <button onclick="calcular()">Calcular</button>
 <button class="copy" onclick="copiar()">📲 Copiar</button>
@@ -45,19 +48,19 @@ button { background:#22c55e; color:white;}
 
 let mensaje = "";
 
-// 🔹 FUNCIÓN SEGURA (ACEPTA COMA Y PUNTO)
-function num(valor){
-  if(!valor) return 0;
-  return parseFloat(valor.toString().replace(",", "."));
+// 🔹 convertir seguro
+function num(v){
+  if(!v) return 0;
+  return parseFloat(v.toString().replace(",", "."));
 }
 
-// 🔹 GUARDAR CAMBIO
+// 🔹 guardar cambio
 function guardarCambio(){
   let ars = num(document.getElementById("usdtars").value);
   let bs = num(document.getElementById("usdtbs").value);
 
-  if(ars <= 0 || bs <= 0){
-    alert("Ingresa valores válidos ⚠️");
+  if(ars<=0 || bs<=0){
+    alert("Valores inválidos ⚠️");
     return;
   }
 
@@ -67,10 +70,10 @@ function guardarCambio(){
   localStorage.setItem("usdtars", ars);
   localStorage.setItem("usdtbs", bs);
 
-  alert("Cambio guardado ✔");
+  alert("Guardado ✔");
 }
 
-// 🔹 PORCENTAJES
+// 🔹 rangos
 function porcentaje(bs){
   if(bs >= 100 && bs <= 300) return 8;
   if(bs <= 700) return 7;
@@ -82,60 +85,90 @@ function porcentaje(bs){
   return 3;
 }
 
-// 🔹 CALCULAR
+// 🔹 cálculo automático
 function calcular(){
 
-  let monto = num(document.getElementById("bs").value);
-  let cliente = document.getElementById("cliente").value || "Cliente";
-
+  let monto = num(document.getElementById("monto").value);
+  let modo = document.getElementById("modo").value;
   let tipoReal = num(localStorage.getItem("tipoReal"));
 
-  if(tipoReal <= 0){
+  if(tipoReal<=0){
     alert("Primero guarda el cambio ⚠️");
     return;
   }
 
-  if(monto <= 0){
-    alert("Ingresa monto válido ⚠️");
+  if(monto<=0){
+    alert("Monto inválido ⚠️");
     return;
   }
 
-  let p = porcentaje(monto);
-
-  // VIP
   let vip = document.getElementById("vip").checked;
-  if(vip && monto >= 300 && monto <= 2000){
-    p -= 0.5;
+
+  // 🔄 BS → ARS
+  if(modo === "bs"){
+
+    let bs = monto;
+    let p = porcentaje(bs);
+
+    if(vip && bs>=300 && bs<=2000){
+      p -= 0.5;
+    }
+
+    let tipoFinal = tipoReal * (1 + p/100);
+    let total = bs * tipoFinal;
+
+    document.getElementById("resultado").innerHTML =
+      "💰 Cobrar: " + total.toLocaleString() + " ARS";
+
+    document.getElementById("detalle").innerHTML =
+      "📊 " + p + "% aplicado";
+
+    mensaje = "💸 Envío a Bolivia 🇧🇴\n" +
+              "Monto: " + bs + " Bs\n" +
+              "Total: " + total.toLocaleString() + " ARS\n" +
+              "✔ Seguro y confiable";
   }
 
-  let tipoFinal = tipoReal * (1 + p/100);
-  let total = monto * tipoFinal;
-  let ganancia = total - (monto * tipoReal);
+  // 🔄 ARS → BS
+  else{
 
-  document.getElementById("resultado").innerHTML =
-    "💰 Cobrar: " + total.toLocaleString() + " ARS";
+    let ars = monto;
 
-  document.getElementById("detalle").innerHTML =
-    "📊 %: " + p + "% | Ganancia: " + ganancia.toLocaleString() + " ARS";
+    // estimación
+    let bsEstimado = ars / tipoReal;
+    let p = porcentaje(bsEstimado);
 
-  mensaje = "💸 Envío a Bolivia con Rodri 🇧🇴\n" +
-            "Cliente: " + cliente +
-            "\nMonto: " + monto + " Bs" +
-            "\nTotal: " + total.toLocaleString() + " ARS\n" +
-            "✔ Seguro y confiable";
+    if(vip && bsEstimado>=300 && bsEstimado<=2000){
+      p -= 0.5;
+    }
+
+    let tipoFinal = tipoReal * (1 + p/100);
+    let bsFinal = ars / tipoFinal;
+
+    document.getElementById("resultado").innerHTML =
+      "💸 Recibe: " + bsFinal.toFixed(2) + " Bs";
+
+    document.getElementById("detalle").innerHTML =
+      "📊 " + p + "% aplicado";
+
+    mensaje = "💸 Envío a Bolivia 🇧🇴\n" +
+              "Envías: " + ars.toLocaleString() + " ARS\n" +
+              "Recibes: " + bsFinal.toFixed(2) + " Bs\n" +
+              "✔ Seguro y confiable";
+  }
 }
 
-// 🔹 COPIAR
+// copiar
 function copiar(){
   if(!mensaje){
     alert("Primero calcula ⚠️");
     return;
   }
   navigator.clipboard.writeText(mensaje);
-  alert("Mensaje copiado ✔");
+  alert("Copiado ✔");
 }
 
-// 🔹 CARGAR DATOS
+// cargar datos
 window.onload = function(){
   document.getElementById("usdtars").value = localStorage.getItem("usdtars") || "";
   document.getElementById("usdtbs").value = localStorage.getItem("usdtbs") || "";
