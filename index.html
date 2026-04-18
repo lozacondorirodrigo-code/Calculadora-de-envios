@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora Envíos PRO</title>
+<title>Calculadora de Envíos Rodri</title>
 
 <style>
 body {
@@ -42,10 +42,10 @@ button {
 
 <body>
 
-<h2>💸 Calculadora Bolivia PRO</h2>
+<h2>💸 Calculadora de Envíos Rodri</h2>
 
-<input type="number" id="usdtars" placeholder="USDT ARS">
-<input type="number" id="usdtbs" placeholder="USDT Bs">
+<input type="number" id="usdtars" placeholder="USDT ARS (ej: 1450)">
+<input type="number" id="usdtbs" placeholder="USDT Bs (ej: 9.45)">
 <input type="number" id="ganancia" value="5" placeholder="% ganancia">
 
 <hr>
@@ -76,17 +76,17 @@ function calcular() {
   let ganancia = cobrar - base;
 
   document.getElementById("tipo").innerHTML =
-    "📊 Cambio: " + tipoFinal.toFixed(2);
+    "📊 Tipo de cambio: " + tipoFinal.toFixed(2);
 
   document.getElementById("resultado").innerHTML =
-    "💰 Cobrar: " + cobrar.toLocaleString() + " ARS";
+    "💰 Total a pagar: " + cobrar.toLocaleString() + " ARS";
 
   document.getElementById("gananciafinal").innerHTML =
-    "📈 Ganancia: " + ganancia.toLocaleString() + " ARS";
+    "📈 Ganancia aprox: " + ganancia.toLocaleString() + " ARS";
 
-  mensaje = "💸 Envío a Bolivia 🇧🇴\n" +
+  mensaje = "💸 Envío a Bolivia con Rodri 🇧🇴\n" +
             "Monto: " + bs + " Bs\n" +
-            "Total: " + cobrar.toLocaleString() + " ARS\n" +
+            "Total a pagar: " + cobrar.toLocaleString() + " ARS\n" +
             "✔ Rápido y seguro";
 }
 
@@ -95,7 +95,7 @@ function copiar() {
   alert("Mensaje copiado ✔");
 }
 
-// guardar datos
+// Guardar datos automáticamente
 window.onload = function() {
   if(localStorage.getItem("usdtars")){
     document.getElementById("usdtars").value = localStorage.getItem("usdtars");
