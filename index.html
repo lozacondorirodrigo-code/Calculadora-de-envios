@@ -9,8 +9,6 @@ body { font-family: Arial; background:#0f172a; color:white; text-align:center; p
 input, button { padding:10px; margin:6px; font-size:15px; width:90%; border-radius:10px; border:none;}
 button { background:#22c55e; color:white;}
 .copy { background:#3b82f6;}
-.reset { background:#ef4444;}
-.export { background:#a855f7;}
 .result { font-size:18px; color:#facc15;}
 .small { font-size:14px; color:#94a3b8;}
 </style>
@@ -23,60 +21,58 @@ button { background:#22c55e; color:white;}
 <h3>⚙️ Cambio del día</h3>
 <input type="number" id="usdtars" placeholder="USDT ARS">
 <input type="number" id="usdtbs" placeholder="USDT Bs">
-<input type="number" id="ganancia" value="5" placeholder="% ganancia">
 <button onclick="guardarCambio()">💾 Guardar cambio</button>
 
 <hr>
 
 <h3>💰 Nueva operación</h3>
-<input type="text" id="cliente" placeholder="Nombre cliente (opcional)">
+<input type="text" id="cliente" placeholder="Cliente (opcional)">
 <input type="number" id="bs" placeholder="Monto en Bs">
 
 <button onclick="calcular()">Calcular</button>
 <button class="copy" onclick="copiar()">📲 Copiar</button>
 
 <div class="result" id="resultado"></div>
-
-<hr>
-
-<h3>📊 Resumen</h3>
-<div class="result" id="totalGanado">Ganancia: 0 ARS</div>
-
-<input type="text" id="filtro" placeholder="Filtrar por cliente" oninput="actualizarHistorial()">
-
-<button class="export" onclick="exportarCSV()">📤 Exportar CSV</button>
-<button class="reset" onclick="resetear()">🔄 Reiniciar día</button>
-
-<hr>
-
-<h3>🧾 Historial</h3>
-<div id="historial" class="small"></div>
+<div class="small" id="detalle"></div>
 
 <script>
+
 let mensaje = "";
 
 function guardarCambio(){
   let usdtars = parseFloat(document.getElementById("usdtars").value);
   let usdtbs = parseFloat(document.getElementById("usdtbs").value);
-  let porcentaje = parseFloat(document.getElementById("ganancia").value);
 
   let tipoReal = usdtars / usdtbs;
-  let tipoFinal = tipoReal * (1 + porcentaje/100);
 
-  localStorage.setItem("tipoFinal", tipoFinal);
   localStorage.setItem("tipoReal", tipoReal);
+  alert("Cambio base guardado ✔");
+}
 
-  alert("Cambio guardado ✔");
+function obtenerPorcentaje(bs){
+  if(bs >= 100 && bs <= 300) return 8;
+  if(bs <= 700) return 7;
+  if(bs <= 1000) return 6.5;
+  if(bs <= 1500) return 6;
+  if(bs <= 2500) return 5;
+  if(bs <= 4000) return 4.5;
+  if(bs <= 6000) return 4;
+  return 3;
 }
 
 function calcular(){
   let bs = parseFloat(document.getElementById("bs").value);
-  let cliente = document.getElementById("cliente").value || "Sin nombre";
+  let cliente = document.getElementById("cliente").value || "Cliente";
 
-  let tipoFinal = parseFloat(localStorage.getItem("tipoFinal"));
   let tipoReal = parseFloat(localStorage.getItem("tipoReal"));
 
-  if(!tipoFinal){ alert("Configura el cambio ⚠️"); return;}
+  if(!tipoReal){
+    alert("Primero configura el cambio ⚠️");
+    return;
+  }
+
+  let porcentaje = obtenerPorcentaje(bs);
+  let tipoFinal = tipoReal * (1 + porcentaje/100);
 
   let cobrar = bs * tipoFinal;
   let costo = bs * tipoReal;
@@ -85,10 +81,14 @@ function calcular(){
   document.getElementById("resultado").innerHTML =
     "💰 Cobrar: " + cobrar.toLocaleString() + " ARS";
 
-  mensaje = "💸 Envío a Bolivia con Rodri 🇧🇴\nCliente: " + cliente +
-            "\nMonto: " + bs + " Bs\nTotal: " + cobrar.toLocaleString() + " ARS";
+  document.getElementById("detalle").innerHTML =
+    "📊 % aplicado: " + porcentaje + "% | Ganancia: " + ganancia.toLocaleString() + " ARS";
 
-  guardarOperacion(cliente, bs, cobrar, ganancia);
+  mensaje = "💸 Envío a Bolivia con Rodri 🇧🇴\n" +
+            "Cliente: " + cliente +
+            "\nMonto: " + bs + " Bs" +
+            "\nTotal: " + cobrar.toLocaleString() + " ARS";
+
 }
 
 function copiar(){
@@ -96,57 +96,6 @@ function copiar(){
   alert("Mensaje copiado ✔");
 }
 
-function guardarOperacion(cliente, bs, cobrar, ganancia){
-  let historial = JSON.parse(localStorage.getItem("historial")) || [];
-  historial.push({
-    fecha: new Date().toLocaleTimeString(),
-    cliente, bs, cobrar, ganancia
-  });
-  localStorage.setItem("historial", JSON.stringify(historial));
-  actualizarHistorial();
-}
-
-function actualizarHistorial(){
-  let historial = JSON.parse(localStorage.getItem("historial")) || [];
-  let filtro = document.getElementById("filtro").value.toLowerCase();
-
-  let html = "";
-  let total = 0;
-
-  historial.forEach(op=>{
-    if(op.cliente.toLowerCase().includes(filtro)){
-      html += op.fecha + " | " + op.cliente + " → " +
-              op.bs + " Bs = " + op.cobrar.toLocaleString() + " ARS<br>";
-      total += op.ganancia;
-    }
-  });
-
-  document.getElementById("historial").innerHTML = html;
-  document.getElementById("totalGanado").innerHTML =
-    "💰 Ganancia: " + total.toLocaleString() + " ARS";
-}
-
-function exportarCSV(){
-  let historial = JSON.parse(localStorage.getItem("historial")) || [];
-  let csv = "Cliente,Bs,ARS,Ganancia\n";
-
-  historial.forEach(op=>{
-    csv += `${op.cliente},${op.bs},${op.cobrar},${op.ganancia}\n`;
-  });
-
-  let blob = new Blob([csv], {type:"text/csv"});
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "historial.csv";
-  a.click();
-}
-
-function resetear(){
-  localStorage.removeItem("historial");
-  actualizarHistorial();
-}
-
-window.onload = actualizarHistorial;
 </script>
 
 </body>
