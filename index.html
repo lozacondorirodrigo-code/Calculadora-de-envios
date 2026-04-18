@@ -19,19 +19,21 @@ button { background:#22c55e; color:white;}
 <h2>💸 Rodri Envíos PRO</h2>
 
 <h3>⚙️ Cambio del día</h3>
-<input type="number" id="usdtars" placeholder="USDT ARS">
-<input type="number" id="usdtbs" placeholder="USDT Bs">
+<input type="text" id="usdtars" placeholder="USDT ARS (ej: 1450)">
+<input type="text" id="usdtbs" placeholder="USDT Bs (ej: 9.45)">
 <button onclick="guardarCambio()">💾 Guardar cambio</button>
 
 <hr>
 
 <h3>💰 Nueva operación</h3>
 <input type="text" id="cliente" placeholder="Cliente (opcional)">
-<input type="number" id="bs" placeholder="Monto en Bs">
+<input type="text" id="bs" placeholder="Monto en Bs">
 
 <label>
 <input type="checkbox" id="vip"> Cliente frecuente ⭐
 </label>
+
+<br><br>
 
 <button onclick="calcular()">Calcular</button>
 <button class="copy" onclick="copiar()">📲 Copiar</button>
@@ -43,27 +45,33 @@ button { background:#22c55e; color:white;}
 
 let mensaje = "";
 
-// 🔹 GUARDAR CAMBIO Y RECORDAR
-function guardarCambio(){
-  let usdtars = parseFloat(document.getElementById("usdtars").value);
-  let usdtbs = parseFloat(document.getElementById("usdtbs").value);
+// 🔹 FUNCIÓN SEGURA (ACEPTA COMA Y PUNTO)
+function num(valor){
+  if(!valor) return 0;
+  return parseFloat(valor.toString().replace(",", "."));
+}
 
-  if(!usdtars || !usdtbs){
-    alert("Completa los valores ⚠️");
+// 🔹 GUARDAR CAMBIO
+function guardarCambio(){
+  let ars = num(document.getElementById("usdtars").value);
+  let bs = num(document.getElementById("usdtbs").value);
+
+  if(ars <= 0 || bs <= 0){
+    alert("Ingresa valores válidos ⚠️");
     return;
   }
 
-  let tipoReal = usdtars / usdtbs;
+  let tipoReal = ars / bs;
 
   localStorage.setItem("tipoReal", tipoReal);
-  localStorage.setItem("usdtars", usdtars);
-  localStorage.setItem("usdtbs", usdtbs);
+  localStorage.setItem("usdtars", ars);
+  localStorage.setItem("usdtbs", bs);
 
   alert("Cambio guardado ✔");
 }
 
-// 🔹 RANGOS
-function obtenerPorcentaje(bs){
+// 🔹 PORCENTAJES
+function porcentaje(bs){
   if(bs >= 100 && bs <= 300) return 8;
   if(bs <= 700) return 7;
   if(bs <= 1000) return 6.5;
@@ -76,40 +84,64 @@ function obtenerPorcentaje(bs){
 
 // 🔹 CALCULAR
 function calcular(){
-  let bs = parseFloat(document.getElementById("bs").value);
+
+  let monto = num(document.getElementById("bs").value);
   let cliente = document.getElementById("cliente").value || "Cliente";
 
-  let tipoReal = parseFloat(localStorage.getItem("tipoReal"));
+  let tipoReal = num(localStorage.getItem("tipoReal"));
 
-  if(!tipoReal){
-    alert("Primero configura el cambio ⚠️");
+  if(tipoReal <= 0){
+    alert("Primero guarda el cambio ⚠️");
     return;
   }
 
-  if(!bs){
-    alert("Ingresa monto ⚠️");
+  if(monto <= 0){
+    alert("Ingresa monto válido ⚠️");
     return;
   }
 
-  let porcentaje = obtenerPorcentaje(bs);
+  let p = porcentaje(monto);
 
   // VIP
-  let esVIP = document.getElementById("vip").checked;
-  if(esVIP && bs >= 300 && bs <= 2000){
-    porcentaje -= 0.5;
+  let vip = document.getElementById("vip").checked;
+  if(vip && monto >= 300 && monto <= 2000){
+    p -= 0.5;
   }
 
-  let tipoFinal = tipoReal * (1 + porcentaje/100);
-  let cobrar = bs * tipoFinal;
-  let ganancia = cobrar - (bs * tipoReal);
+  let tipoFinal = tipoReal * (1 + p/100);
+  let total = monto * tipoFinal;
+  let ganancia = total - (monto * tipoReal);
 
   document.getElementById("resultado").innerHTML =
-    "💰 Cobrar: " + cobrar.toLocaleString() + " ARS";
+    "💰 Cobrar: " + total.toLocaleString() + " ARS";
 
   document.getElementById("detalle").innerHTML =
-    "📊 %: " + porcentaje + "% | Ganancia: " + ganancia.toLocaleString() + " ARS";
+    "📊 %: " + p + "% | Ganancia: " + ganancia.toLocaleString() + " ARS";
 
   mensaje = "💸 Envío a Bolivia con Rodri 🇧🇴\n" +
             "Cliente: " + cliente +
-            "\nMonto: " + bs + " Bs" +
-            "\n
+            "\nMonto: " + monto + " Bs" +
+            "\nTotal: " + total.toLocaleString() + " ARS\n" +
+            "✔ Seguro y confiable";
+}
+
+// 🔹 COPIAR
+function copiar(){
+  if(!mensaje){
+    alert("Primero calcula ⚠️");
+    return;
+  }
+  navigator.clipboard.writeText(mensaje);
+  alert("Mensaje copiado ✔");
+}
+
+// 🔹 CARGAR DATOS
+window.onload = function(){
+  document.getElementById("usdtars").value = localStorage.getItem("usdtars") || "";
+  document.getElementById("usdtbs").value = localStorage.getItem("usdtbs") || "";
+}
+
+</script>
+
+</body>
+</html>
