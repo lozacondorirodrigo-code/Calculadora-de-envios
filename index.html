@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora PRO Cambio</title>
+<title>Calculadora Envíos PRO</title>
 
 <style>
 body {
@@ -10,7 +10,7 @@ body {
   background: #0f172a;
   color: white;
   text-align: center;
-  padding: 20px;
+  padding: 15px;
 }
 input, button {
   padding: 12px;
@@ -24,38 +24,44 @@ button {
   background: #22c55e;
   color: white;
 }
+.copy {
+  background: #3b82f6;
+}
 .result {
-  margin-top: 15px;
+  margin-top: 10px;
   font-size: 20px;
   color: #facc15;
 }
 .small {
-  font-size: 15px;
+  font-size: 14px;
   color: #94a3b8;
 }
 </style>
+
 </head>
 
 <body>
 
-<h2>💸 Calculadora PRO Bolivia</h2>
+<h2>💸 Calculadora Bolivia PRO</h2>
 
-<input type="number" id="usdtars" placeholder="USDT en ARS (ej: 1450)">
-<input type="number" id="usdtbs" placeholder="USDT en Bs (ej: 9.45)">
-
+<input type="number" id="usdtars" placeholder="USDT ARS">
+<input type="number" id="usdtbs" placeholder="USDT Bs">
 <input type="number" id="ganancia" value="5" placeholder="% ganancia">
 
 <hr>
 
-<input type="number" id="bs" placeholder="Monto en Bs a enviar">
+<input type="number" id="bs" placeholder="Monto en Bs">
 
 <button onclick="calcular()">Calcular</button>
+<button class="copy" onclick="copiar()">📲 Copiar mensaje</button>
 
 <div class="result" id="tipo"></div>
 <div class="result" id="resultado"></div>
 <div class="small" id="gananciafinal"></div>
 
 <script>
+let mensaje = "";
+
 function calcular() {
   let usdtars = parseFloat(document.getElementById("usdtars").value);
   let usdtbs = parseFloat(document.getElementById("usdtbs").value);
@@ -70,15 +76,41 @@ function calcular() {
   let ganancia = cobrar - base;
 
   document.getElementById("tipo").innerHTML =
-    "📊 Tipo real: " + tipoReal.toFixed(2) + 
-    " → Tu cambio: " + tipoFinal.toFixed(2);
+    "📊 Cambio: " + tipoFinal.toFixed(2);
 
   document.getElementById("resultado").innerHTML =
     "💰 Cobrar: " + cobrar.toLocaleString() + " ARS";
 
   document.getElementById("gananciafinal").innerHTML =
     "📈 Ganancia: " + ganancia.toLocaleString() + " ARS";
+
+  mensaje = "💸 Envío a Bolivia 🇧🇴\n" +
+            "Monto: " + bs + " Bs\n" +
+            "Total: " + cobrar.toLocaleString() + " ARS\n" +
+            "✔ Rápido y seguro";
 }
+
+function copiar() {
+  navigator.clipboard.writeText(mensaje);
+  alert("Mensaje copiado ✔");
+}
+
+// guardar datos
+window.onload = function() {
+  if(localStorage.getItem("usdtars")){
+    document.getElementById("usdtars").value = localStorage.getItem("usdtars");
+    document.getElementById("usdtbs").value = localStorage.getItem("usdtbs");
+    document.getElementById("ganancia").value = localStorage.getItem("ganancia");
+  }
+}
+
+document.querySelectorAll("input").forEach(input => {
+  input.addEventListener("change", () => {
+    localStorage.setItem("usdtars", document.getElementById("usdtars").value);
+    localStorage.setItem("usdtbs", document.getElementById("usdtbs").value);
+    localStorage.setItem("ganancia", document.getElementById("ganancia").value);
+  });
+});
 </script>
 
 </body>
