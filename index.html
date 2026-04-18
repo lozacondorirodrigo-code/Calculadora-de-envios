@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora Envíos</title>
+<title>Calculadora PRO Cambio</title>
+
 <style>
 body {
   font-family: Arial;
@@ -13,8 +14,8 @@ body {
 }
 input, button {
   padding: 12px;
-  margin: 10px;
-  font-size: 18px;
+  margin: 8px;
+  font-size: 16px;
   width: 90%;
   border-radius: 10px;
   border: none;
@@ -24,33 +25,59 @@ button {
   color: white;
 }
 .result {
-  margin-top: 20px;
-  font-size: 22px;
+  margin-top: 15px;
+  font-size: 20px;
   color: #facc15;
+}
+.small {
+  font-size: 15px;
+  color: #94a3b8;
 }
 </style>
 </head>
 
 <body>
 
-<h2>💸 Calculadora Bolivia</h2>
+<h2>💸 Calculadora PRO Bolivia</h2>
 
-<input type="number" id="bs" placeholder="Monto en Bs">
+<input type="number" id="usdtars" placeholder="USDT en ARS (ej: 1450)">
+<input type="number" id="usdtbs" placeholder="USDT en Bs (ej: 9.45)">
 
-<input type="number" id="cambio" value="150">
+<input type="number" id="ganancia" value="5" placeholder="% ganancia">
+
+<hr>
+
+<input type="number" id="bs" placeholder="Monto en Bs a enviar">
 
 <button onclick="calcular()">Calcular</button>
 
+<div class="result" id="tipo"></div>
 <div class="result" id="resultado"></div>
+<div class="small" id="gananciafinal"></div>
 
 <script>
 function calcular() {
-  let bs = document.getElementById("bs").value;
-  let cambio = document.getElementById("cambio").value;
-  let total = bs * cambio;
+  let usdtars = parseFloat(document.getElementById("usdtars").value);
+  let usdtbs = parseFloat(document.getElementById("usdtbs").value);
+  let porcentaje = parseFloat(document.getElementById("ganancia").value);
+  let bs = parseFloat(document.getElementById("bs").value);
+
+  let tipoReal = usdtars / usdtbs;
+  let tipoFinal = tipoReal * (1 + porcentaje/100);
+
+  let cobrar = bs * tipoFinal;
+  let base = bs * tipoReal;
+  let ganancia = cobrar - base;
+
+  document.getElementById("tipo").innerHTML =
+    "📊 Tipo real: " + tipoReal.toFixed(2) + 
+    " → Tu cambio: " + tipoFinal.toFixed(2);
 
   document.getElementById("resultado").innerHTML =
-    "💰 Cobrar: " + total.toLocaleString() + " ARS";
+    "💰 Cobrar: " + cobrar.toLocaleString() + " ARS";
+
+  document.getElementById("gananciafinal").innerHTML =
+    "📈 Ganancia: " + ganancia.toLocaleString() + " ARS";
 }
 </script>
 
