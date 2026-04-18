@@ -11,7 +11,6 @@ button { background:#22c55e; color:white;}
 .copy { background:#3b82f6;}
 .result { font-size:18px; color:#facc15;}
 .small { font-size:14px; color:#94a3b8;}
-label { font-size:16px; }
 </style>
 </head>
 
@@ -27,7 +26,6 @@ label { font-size:16px; }
 <hr>
 
 <h3>💰 Nueva operación</h3>
-
 <input type="text" id="cliente" placeholder="Cliente (opcional)">
 <input type="number" id="bs" placeholder="Monto en Bs">
 
@@ -45,16 +43,26 @@ label { font-size:16px; }
 
 let mensaje = "";
 
+// 🔹 GUARDAR CAMBIO Y RECORDAR
 function guardarCambio(){
   let usdtars = parseFloat(document.getElementById("usdtars").value);
   let usdtbs = parseFloat(document.getElementById("usdtbs").value);
 
+  if(!usdtars || !usdtbs){
+    alert("Completa los valores ⚠️");
+    return;
+  }
+
   let tipoReal = usdtars / usdtbs;
+
   localStorage.setItem("tipoReal", tipoReal);
+  localStorage.setItem("usdtars", usdtars);
+  localStorage.setItem("usdtbs", usdtbs);
 
   alert("Cambio guardado ✔");
 }
 
+// 🔹 RANGOS
 function obtenerPorcentaje(bs){
   if(bs >= 100 && bs <= 300) return 8;
   if(bs <= 700) return 7;
@@ -66,6 +74,7 @@ function obtenerPorcentaje(bs){
   return 3;
 }
 
+// 🔹 CALCULAR
 function calcular(){
   let bs = parseFloat(document.getElementById("bs").value);
   let cliente = document.getElementById("cliente").value || "Cliente";
@@ -77,9 +86,14 @@ function calcular(){
     return;
   }
 
+  if(!bs){
+    alert("Ingresa monto ⚠️");
+    return;
+  }
+
   let porcentaje = obtenerPorcentaje(bs);
 
-  // CLIENTE VIP
+  // VIP
   let esVIP = document.getElementById("vip").checked;
   if(esVIP && bs >= 300 && bs <= 2000){
     porcentaje -= 0.5;
@@ -92,4 +106,10 @@ function calcular(){
   document.getElementById("resultado").innerHTML =
     "💰 Cobrar: " + cobrar.toLocaleString() + " ARS";
 
-  document.getElementById("detalle
+  document.getElementById("detalle").innerHTML =
+    "📊 %: " + porcentaje + "% | Ganancia: " + ganancia.toLocaleString() + " ARS";
+
+  mensaje = "💸 Envío a Bolivia con Rodri 🇧🇴\n" +
+            "Cliente: " + cliente +
+            "\nMonto: " + bs + " Bs" +
+            "\n
